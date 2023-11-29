@@ -19,6 +19,8 @@ public class Player : MonoBehaviour
     private Animator bodyAnimator;
 
     private bool isJumping = false;
+    private bool canWalk = true;
+    private bool isFalling = false;
 
     //Animations hash
     int isRunningHash;
@@ -27,6 +29,7 @@ public class Player : MonoBehaviour
     int isWalkingLeftHash;
     int isWalkingRightHash;
     int isWalkingBackHash;
+    int fallingStateHash;
 
     // Start is called before the first frame update
     void Start()
@@ -47,11 +50,20 @@ public class Player : MonoBehaviour
         isWalkingLeftHash = Animator.StringToHash("isWalkingLeft");
         isWalkingRightHash = Animator.StringToHash("isWalkingRight");
         isWalkingBackHash = Animator.StringToHash("isWalkingBack");
+        fallingStateHash = Animator.StringToHash("fallingState");
+
+        isFalling = true;
+        bodyAnimator.SetInteger(fallingStateHash, 1);
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (GroundCheck() && isFalling)
+        {
+            StartCoroutine(FallHitGround());
+        }
+
         MovementHandler();
         LockMouse();
     }
@@ -86,7 +98,11 @@ public class Player : MonoBehaviour
 
     private void BasicWalk()
     {
-        Debug.Log(rigidbody.velocity.magnitude);
+        if (!canWalk)
+        {
+            return;
+        }
+
         if (Input.GetKey(KeyCode.W))
         {
             if (Input.GetKey(KeyCode.LeftShift) && GroundCheck())
@@ -127,11 +143,7 @@ public class Player : MonoBehaviour
             return;
         }
 
-        bodyAnimator.SetBool(isRunningHash, false);
-        bodyAnimator.SetBool(isRunningFasterHash, false);
-        bodyAnimator.SetBool(isWalkingLeftHash, false);
-        bodyAnimator.SetBool(isWalkingRightHash, false);
-        bodyAnimator.SetBool(isWalkingBackHash, false);
+        ResetMovementAnimations();
     }
 
     private void JumpingHandler()
@@ -150,7 +162,7 @@ public class Player : MonoBehaviour
         if (GroundCheck() && isJumping)
         {
             isJumping = false;
-            bodyAnimator.SetBool(isJumpingHash, false);
+            StartCoroutine(FallJump());
         }
     }
 
@@ -161,6 +173,14 @@ public class Player : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
 
         rigidbody.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+    }
+
+    IEnumerator FallJump()
+    {
+        canWalk = false;
+        bodyAnimator.SetBool(isJumpingHash, false);
+        yield return new WaitForSeconds(1);
+        canWalk = true;
     }
 
     private void LockMouse()
@@ -195,5 +215,24 @@ public class Player : MonoBehaviour
             maxDistance,
             layerMask
             );
+    }
+
+    private void ResetMovementAnimations()
+    {
+        bodyAnimator.SetBool(isRunningHash, false);
+        bodyAnimator.SetBool(isRunningFasterHash, false);
+        bodyAnimator.SetBool(isWalkingLeftHash, false);
+        bodyAnimator.SetBool(isWalkingRightHash, false);
+        bodyAnimator.SetBool(isWalkingBackHash, false);
+    }
+
+    IEnumerator FallHitGround()
+    {
+        bodyAnimator.SetInteger(fallingStateHash, 2);
+        yield return new WaitForSeconds(1f);
+        bodyAnimator.SetInteger(fallingStateHash, 3);
+        isFalling = false;
+        yield return new WaitForSeconds(8f);
+        bodyAnimator.SetInteger(fallingStateHash, 0);
     }
 }
