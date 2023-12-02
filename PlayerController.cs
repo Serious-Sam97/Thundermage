@@ -30,6 +30,7 @@ public class Player : MonoBehaviour
     int isWalkingRightHash;
     int isWalkingBackHash;
     int fallingStateHash;
+    int isChattingHash;
 
     // Start is called before the first frame update
     void Start()
@@ -51,9 +52,12 @@ public class Player : MonoBehaviour
         isWalkingRightHash = Animator.StringToHash("isWalkingRight");
         isWalkingBackHash = Animator.StringToHash("isWalkingBack");
         fallingStateHash = Animator.StringToHash("fallingState");
+        isChattingHash = Animator.StringToHash("isChatting");
 
-        isFalling = true;
-        bodyAnimator.SetInteger(fallingStateHash, 1);
+        //Starting Animation
+        //isFalling = true;
+        //bodyAnimator.SetInteger(fallingStateHash, 1);
+        bodyAnimator.SetInteger(fallingStateHash, 0);
     }
 
     // Update is called once per frame
@@ -217,7 +221,7 @@ public class Player : MonoBehaviour
             );
     }
 
-    private void ResetMovementAnimations()
+    public void ResetMovementAnimations()
     {
         bodyAnimator.SetBool(isRunningHash, false);
         bodyAnimator.SetBool(isRunningFasterHash, false);
@@ -234,5 +238,22 @@ public class Player : MonoBehaviour
         isFalling = false;
         yield return new WaitForSeconds(8f);
         bodyAnimator.SetInteger(fallingStateHash, 0);
+    }
+
+    public void SetCanWalk(bool can)
+    {
+        canWalk = can;
+    }
+
+    public bool CanWalk()
+    {
+        return canWalk;
+    }
+
+    public void StartChat(bool isAfraid = false)
+    {
+        if (isAfraid) {
+            bodyAnimator.SetBool(isChattingHash, true);
+        }
     }
 }
