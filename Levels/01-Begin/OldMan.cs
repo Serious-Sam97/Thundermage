@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class OldManController : MonoBehaviour
 {
+    int isWalkingHash;
+
     // Start is called before the first frame update
     void Start()
     {
